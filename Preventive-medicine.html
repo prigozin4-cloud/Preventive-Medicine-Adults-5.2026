@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת רפואה מונעת - לוח בקרה אישי</title>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --navy: #1a2e44;
+            --steel-grey: #718096;
+            --light-grey: #f7fafc;
+            --white: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-blue: #2c5282;
+        }
+
+        body { font-family: 'Heebo', sans-serif; background-color: var(--light-grey); color: var(--navy); margin: 0; padding: 20px; line-height: 1.4; }
+        .container { max-width: 1000px; margin: auto; }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid var(--navy); padding-bottom: 10px; }
+        h1 { font-size: 2rem; margin: 0; font-weight: 700; color: var(--navy); }
+
+        .input-panel { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .form-row { display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .form-group { display: flex; align-items: center; gap: 8px; }
+        label { font-weight: 700; }
+        input, select { padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-family: 'Heebo', sans-serif; font-size: 1rem; }
+        button { background-color: var(--navy); color: var(--white); border: none; padding: 7px 20px; border-radius: 4px; font-weight: 700; cursor: pointer; transition: background 0.2s; font-family: 'Heebo', sans-serif; font-size: 1rem; }
+        button:hover { background-color: var(--accent-blue); }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px; }
+        .card { background: var(--white); border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header { background-color: var(--navy); color: var(--white); padding: 10px 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
+        .card-content { padding: 15px; }
+
+        .recommendation-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .recommendation-item:last-child { border-bottom: none; }
+        .item-icon { color: var(--accent-blue); font-size: 1.2rem; margin-top: 2px; width: 24px; text-align: center; }
+        .item-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 700; }
+        .item-details p { margin: 0; color: var(--steel-grey); font-size: 0.9rem; }
+        .item-badge { display: inline-block; background: #e2e8f0; color: var(--navy); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-top: 4px; }
+
+        .alert-box { background-color: #fffaf0; border-right: 4px solid #dd6b20; padding: 12px; border-radius: 4px; margin-bottom: 15px; display: none; }
+        .alert-box h4 { margin: 0 0 5px 0; color: #dd6b20; }
+        .alert-box p { margin: 0; font-size: 0.9rem; }
+
+        .external-link { color: var(--accent-blue); text-decoration: underline; cursor: pointer; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .input-panel, button { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #cbd5e0; page-break-inside: avoid; }
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>מערכת רפואה מונעת - לוח בקרה אישי</h1>
+    </header>
+
+    <div class="input-panel">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="gender">מין:</label>
+                <select id="gender">
+                    <option value="male">גבר</option>
+                    <option value="female">אישה</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="age">גיל:</label>
+                <input type="number" id="age" min="18" max="120" value="40">
+            </div>
+            <button onclick="generateDashboard()">הפק לוח בקרה</button>
+        </div>
+    </div>
+
+    <div id="alertBox" class="alert-box"></div>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-vial"></i> בדיקות דם, ניטור וסיקור כללי
+            </div>
+            <div class="card-content" id="bloodSection">
+                <p style="color: var(--steel-grey);">הזן נתונים ולחץ על הפק לוח בקרה.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-stethoscope"></i> גילוי מוקדם של ממאירות
+            </div>
+            <div class="card-content" id="cancerSection">
+                <p style="color: var(--steel-grey);">הזן נתונים ולחץ על הפק לוח בקרה.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-syringe"></i> חיסונים מומלצים
+            </div>
+            <div class="card-content" id="vaxSection">
+                <p style="color: var(--steel-grey);">הזן נתונים ולחץ על הפק לוח בקרה.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-solid fa-heart-pulse"></i> אורח חיים, ויטמינים ותוספים
+            </div>
+            <div class="card-content" id="lifestyleSection">
+                <p style="color: var(--steel-grey);">הזן נתונים ולחץ על הפק לוח בקרה.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function createItem(icon, title, text, badge = "") {
+        return `
+            <div class="recommendation-item">
+                <div class="item-icon"><i class="fa-solid ${icon}"></i></div>
+                <div class="item-details">
+                    <h4>${title}</h4>
+                    <p>${text}</p>
+                    ${badge ? `<span class="item-badge">${badge}</span>` : ""}
+                </div>
+            </div>
+        `;
+    }
+
+    function openFrax() {
+        window.open("https://frax.sheffield.ac.uk/FRAX/tool.aspx?country=31", "_blank");
+    }
+
+    function generateDashboard() {
+        const gender = document.getElementById("gender").value;
+        const age = parseInt(document.getElementById("age").value);
+        
+        if (isNaN(age) || age < 18 || age > 120) {
+            alert("אנא הזן גיל תקין בין 18 ל-120");
+            return;
+        }
+
+        const bloodDiv = document.getElementById("bloodSection");
+        const cancerDiv = document.getElementById("cancerSection");
+        const vaxDiv = document.getElementById("vaxSection");
+        const lifeDiv = document.getElementById("lifestyleSection");
+        const alertBox = document.getElementById("alertBox");
+
+        // איפוס תכנים
+        bloodDiv.innerHTML = "";
+        cancerDiv.innerHTML = "";
+        vaxDiv.innerHTML = "";
+        lifeDiv.innerHTML = "";
+        alertBox.style.display = "none";
+
+        // --- בדיקות דם וניטור כללי ---
+        bloodDiv.innerHTML += createItem("fa-gauge", "לחץ דם", "בדיקה שגרתית אחת לשנתיים (מגיל 18 ומעלה).");
+        
+        if ((gender === 'male' && age >= 35 && age <= 75) || (gender === 'female' && age >= 45 && age <= 75)) {
+            bloodDiv.innerHTML += createItem("fa-vial-circle-check", "שומנים בדם (כולסטרול)", "פרופיל שומנים מלא אחת ל-5 שנים.", "סל הבריאות");
+        } else if (age >= 18 && age <= 75) {
+            bloodDiv.innerHTML += createItem("fa-circle-info", "שומנים בדם (כולסטרול)", "מומלץ לבצע בדיקת בסיס מגיל 18. סקר שגרתי מתחיל בגיל 35 לגברים ו-45 לנשים, אלא אם קיימים גורמי סיכון.");
+        }
+
+        if (age >= 40) {
+            bloodDiv.innerHTML += createItem("fa-droplet", "גלוקוז בצום (סוכרת)", "בדיקת סקר אחת ל-3 שנים בגילאי 40-70 לעודף משקל או גורמי סיכון.");
+        }
+
+        // הערכת סיכון לשברים (FRAX) ואוסטאופורוזיס
+        if (age >= 60) {
+            let fraxText = `מומלץ לבצע הערכת סיכון לשברים באמצעות <span class="external-link" onclick="openFrax()">מחשבון FRAX המותאם לישראל</span>.`;
+            
+            if ((gender === 'female' && age >= 65) || (gender === 'male' && age >= 70)) {
+                fraxText += " במידה והסיכון מוגבר, או בהגיעך לגיל הרלוונטי (נשים 65+, גברים 70+), מומלץ לבצע בדיקת צפיפות עצם (DEXA) אחת ל-5 שנים.";
+            }
+            
+            // שילוב הניסוח המבוקש במדויק
+            fraxText += " <br>שבר קיים מקנה זכאות לבדיקת צפיפות עצם אחת ל-5 שנים <strong>או אחת לשנתיים לפי קריטריוני הסל (בדוק ב\"כל הבריאות\")</strong>.";
+            
+            bloodDiv.innerHTML += createItem("fa-bone", "הערכת סיכון לאוסטאופורוזיס וצפיפות עצם", fraxText, "כל הבריאות");
+        }
+
+        // --- גילוי מוקדם של סרטן ---
+        if (age >= 50 && age <= 74) {
+            cancerDiv.innerHTML += createItem("fa-magnifying-glass", "סרטן המעי הגס", "בדיקת דם סמוי בצואה אחת לשנה.", "גילאי 50-74");
+        }
+        
+        if (gender === 'female') {
+            if (age >= 50 && age <= 74) {
+                cancerDiv.innerHTML += createItem("fa-person-breastfeeding", "סרטן השד", "ממוגרפיה אחת לשנתיים.", "גילאי 50-74");
+            }
+            if (age >= 25 && age <= 65) {
+                cancerDiv.innerHTML += createItem("fa-dna", "סרטן צוואר הרחם", "בדיקת סקר מבוססת HPV אחת ל-5 שנים.", "גילאי 25-65");
+            }
+        }
+
+        if (gender === 'male' && age >= 65 && age <= 74) {
+            cancerDiv.innerHTML += createItem("fa-ultrasound", "מפרצת אבי העורקים הבטני (AAA)", "בדיקת אולטרסאונד בטן חד-פעמית לגברים בגילאי 65-74 עם היסטוריית עישון.");
+        }
+
+        if (cancerDiv.innerHTML === "") {
+            cancerDiv.innerHTML = '<p style="color: var(--steel-grey);">אין בדיקות סקר אונקולוגיות מוגדרות כרוטינה לגיל ומין זה (ללא גורמי סיכון מיוחדים).</p>';
+        }
+
+        // --- חיסונים ---
+        vaxDiv.innerHTML += createItem("fa-virus-covid", "שפעת", "חיסון עונתי שנתי (מומלץ לכל האוכלוסייה, בדגש על גילאי 65 ומעלה).");
+        
+        if (age <= 26) {
+            vaxDiv.innerHTML += createItem("fa-shield-virus", "פפילומה (HPV)", "השלמת החיסון (למי שלא התחסן בבית הספר) עד גיל 26.");
+        }
+        
+        if (age >= 65) {
+            vaxDiv.innerHTML += createItem("fa-virus", "שלבקת חוגרת", "חיסון Shingrix (שתי מנות) הכלול בסל הבריאות.", "מגיל 65");
+            vaxDiv.innerHTML += createItem("fa-hospital-user", "דלקת ריאות (פנוימוקוק)", "חיסון פנוימוקוק (PCV15 / PPSV23) לפי הנחיות משרד הבריאות המעודכנות.");
+            vaxDiv.innerHTML += createItem("fa-lungs-virus", "חיסון RSV", "חיסון נגד נגיף ה-RSV למבוגרים מגיל 60-65 עם מחלות רקע נשימתיות או כרוניות.");
+        }
+
+        // --- אורח חיים וויטמינים ---
+        if (age >= 65) {
+            lifeDiv.innerHTML += createItem("fa-tablets", "ויטמין D", "המלצה מניעתית לתיסוף של 800-1,000 יחב\"ל ליממה למניעת נפילות ושברים.");
+        }
+        if (gender === 'female' && age >= 50) {
+            lifeDiv.innerHTML += createItem("fa-bottle-dropper", "סידן", "צריכה יומית מומלצת של 1,200 מ\"ג (רצוי ממזון, ובמידת הצורך מתוספים).");
+        } else if (age >= 19) {
+            lifeDiv.innerHTML += createItem("fa-bottle-dropper", "סידן", "צריכה יומית מומלצת של 1,000 מ\"ג ביום לשמירה על בריאות העצם.");
+        }
+
+        lifeDiv.innerHTML += createItem("fa-person-walking", "פעילות גופנית", "לפחות 150 דקות בשבוע של פעילות אירובית בעצימות בינונית, בשילוב תרגילי כוח פעמיים בשבוע.");
+
+        // --- התראות מיוחדות במידת הצורך ---
+        if (age >= 65) {
+            alertBox.innerHTML = `<h4>💡 דגש רפואי לגיל השלישי</h4><p>בגיל זה מומלץ לבצע הערכה תקופתית מקיפה הכוללת בדיקת ראייה, שמיעה, הערכת סיכון לנפילות, סקירת תרופות (Polypharmacy) ומבחן סינון קוגניטיבי ראשוני.</p>`;
+            alertBox.style.display = "block";
+        }
+    }
+</script>
+
+</body>
+</html>
